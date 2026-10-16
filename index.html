@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Replacement Algorithm Simulator</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        fontFamily: { gloock:['Gloock','serif'], manrope:['Manrope','sans-serif'], bebas:['Bebas Neue','cursive'] }
+      }}
+    }
+  </script>
+
+<link rel="stylesheet" href="style.css" />
+</head>
+<body class="overflow-x-hidden">
+
+<div id="noise-overlay" aria-hidden="true"></div>
+<div id="grid-bg" aria-hidden="true"></div>
+
+<!-- ══════════ HEADER ══════════ -->
+<header class="fixed top-0 inset-x-0 z-20 border-b border-white/[.07] backdrop-blur-xl"
+        style="background:rgba(7,7,7,.75);box-shadow:0 1px 0 rgba(255,255,255,.04),0 8px 32px rgba(0,0,0,.4);">
+  <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between gap-8">
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <div class="vl-logo w-8 h-8 rounded-[5px] flex items-center justify-center">
+        <span class="font-bebas text-sm tracking-widest text-gradient-indigo select-none">PR</span>
+      </div>
+      <span class="font-manrope font-700 text-sm tracking-widest text-white/90 uppercase">Page-Replacment</span>
+    </div>
+    <nav class="hidden md:flex items-center gap-7">
+      <a href="#hero"       class="nav-item">Overview</a>
+      <a href="#algorithms" class="nav-item">Penjelasan</a>
+      <a href="#simulator"  class="nav-item">Simulator</a>
+      <a href="#comparison" class="nav-item">Komparasi</a>
+    </nav>
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+        <span class="status-dot w-1.5 h-1.5 rounded-full bg-emerald-400 block"></span>
+        <span class="font-manrope text-[10px] font-600 tracking-widest text-emerald-400 uppercase">Simulator Ready</span>
+      </div>
+      <button onclick="document.getElementById('simulator').scrollIntoView({behavior:'smooth'})"
+              class="btn-primary rounded-md px-4 py-1.5 text-xs font-manrope font-700 tracking-widest text-white uppercase">
+        Run Sim
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="relative z-10 pt-14">
+
+<!-- ══════════════════════════════════════════════
+     SECTION 1 — HERO
+══════════════════════════════════════════════ -->
+<section id="hero" class="min-h-screen py-20 px-6 section-grid-4">
+  <div class="hero-layout max-w-7xl mx-auto">
+
+    <!-- LEFT -->
+    <div class="flex flex-col gap-7 pt-8">
+      <div class="flex items-center gap-3">
+        <div class="relative flex items-center justify-center">
+          <span class="pulse-badge relative z-10 w-2 h-2 rounded-full bg-indigo-500 block"></span>
+        </div>
+        <span class="font-manrope text-[10px] font-700 tracking-[.2em] text-indigo-400 uppercase">Vectorline OS — Page Replacement v2.0</span>
+      </div>
+
+      <div>
+        <h1 class="font-gloock text-5xl xl:text-6xl leading-[1.05] text-white mb-4 reveal-block">
+          <div class="reveal-word"><span>Page</span></div>
+          <div class="reveal-word"><span>Replacement</span></div><br>
+          <div class="reveal-word"><span class="text-gradient-indigo">Simulator</span></div><br>
+        </h1>
+        <p class="font-manrope text-sm leading-relaxed text-white/40 max-w-xs">
+          Simulasi lengkap algoritma penggantian halaman dengan tabel input/output
+          bergaya buku teks, step-by-step navigator, dan analisis komparatif real-time.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="document.getElementById('simulator').scrollIntoView({behavior:'smooth'})"
+                class="btn-primary rounded-md px-6 py-2.5 font-manrope font-700 text-sm tracking-widest text-white uppercase flex items-center gap-2">
+          <iconify-icon icon="solar:play-circle-linear" width="14"></iconify-icon>
+          Mulai Simulasi
+        </button>
+        <button onclick="document.getElementById('algorithms').scrollIntoView({behavior:'smooth'})"
+                class="btn-etched rounded-md px-5 py-2.5 font-manrope font-600 text-sm tracking-widest text-white/60 uppercase flex items-center gap-2">
+          <iconify-icon icon="lucide:book-open" width="14"></iconify-icon>
+          Pelajari
+        </button>
+      </div>
+
+      <div class="hero-avatars" role="group" aria-label="Anggota tim">
+        <div class="hero-person">
+          <img class="hero-avatar" src="Ibnu kecil.jpeg" alt="Foto Bayu" loading="lazy" />
+          <span>Bayu</span>
+        </div>
+        <div class="hero-person">
+          <img class="hero-avatar" src="bayu.jpeg" alt="Foto Adit" loading="lazy" />
+          <span>Adit</span>
+        </div>
+        <div class="hero-person">
+          <img class="hero-avatar" src="ibnu gede.jpeg" alt="Foto Ibnu Rifky" loading="lazy" />
+          <span>Ibnu Rifky</span>
+        </div>
+        <div class="hero-person">
+          <img class="hero-avatar" src="adit.jpeg" alt="Foto Ibnu Maulana" loading="lazy" />
+          <span>Ibnu Maulana</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-1">
+        <div class="feature-card corner-accent rounded-lg p-4">
+          <iconify-icon icon="solar:layers-linear" class="text-indigo-400 mb-2 block" width="18"></iconify-icon>
+          <div class="font-manrope font-700 text-xs tracking-widest text-white uppercase mb-1">FIFO</div>
+          <div class="font-manrope text-[11px] text-white/35 leading-snug">Queue — halaman terlama pertama keluar</div>
+        </div>
+        <div class="feature-card corner-accent rounded-lg p-4">
+          <iconify-icon icon="solar:clock-circle-linear" class="text-indigo-400 mb-2 block" width="18"></iconify-icon>
+          <div class="font-manrope font-700 text-xs tracking-widest text-white uppercase mb-1">LRU</div>
+          <div class="font-manrope text-[11px] text-white/35 leading-snug">Stack — halaman paling lama tidak diakses</div>
+        </div>
+        <div class="feature-card corner-accent rounded-lg p-4">
+          <iconify-icon icon="solar:stars-linear" class="text-yellow-400 mb-2 block" width="18"></iconify-icon>
+          <div class="font-manrope font-700 text-xs tracking-widest text-white uppercase mb-1">Optimal</div>
+          <div class="font-manrope text-[11px] text-white/35 leading-snug">Look-ahead — benchmark teoritis minimum</div>
+        </div>
+        <div class="feature-card corner-accent rounded-lg p-4">
+          <iconify-icon icon="solar:refresh-circle-linear" class="text-indigo-400 mb-2 block" width="18"></iconify-icon>
+          <div class="font-manrope font-700 text-xs tracking-widest text-white uppercase mb-1">Clock</div>
+          <div class="font-manrope text-[11px] text-white/35 leading-snug">Second chance — pointer + reference bit</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT — Hero Canvas -->
+    <div class="hero-animation relative frame-section corner-accent rounded-2xl overflow-hidden">
+      <div class="absolute inset-0 section-grid-4 pattern-overlay pointer-events-none z-0"></div>
+      <div class="absolute inset-0 section-grid-2 pattern-screen pointer-events-none z-0"></div>
+      <canvas id="heroCanvas" class="absolute inset-0 w-full h-full z-[1]"></canvas>
+
+      <svg class="svg-connector absolute inset-0 w-full h-full z-[2] pointer-events-none"
+           viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice">
+        <g stroke="#6366f1" stroke-width="1" fill="none" opacity="0.5">
+          <path d="M188 158 H316 V254"/>
+          <path d="M816 172 H686 V278"/>
+          <path d="M196 526 H356 V426"/>
+          <path d="M790 552 H636 V446"/>
+        </g>
+        <g stroke="rgba(99,102,241,0.3)" stroke-width="0.5" fill="none">
+          <line x1="186" y1="152" x2="186" y2="164"/><line x1="180" y1="158" x2="192" y2="158"/>
+          <line x1="818" y1="166" x2="818" y2="178"/><line x1="812" y1="172" x2="824" y2="172"/>
+          <line x1="194" y1="520" x2="194" y2="532"/><line x1="188" y1="526" x2="200" y2="526"/>
+          <line x1="788" y1="546" x2="788" y2="558"/><line x1="782" y1="552" x2="794" y2="552"/>
+        </g>
+        <text x="320" y="248" fill="rgba(99,102,241,0.5)" font-size="7" font-family="Manrope" letter-spacing="1">PAGE.FRAME[0]</text>
+        <text x="574" y="272" fill="rgba(99,102,241,0.5)" font-size="7" font-family="Manrope" letter-spacing="1">PAGE.FRAME[1]</text>
+        <text x="356" y="420" fill="rgba(99,102,241,0.5)" font-size="7" font-family="Manrope" letter-spacing="1">PAGE.FAULT.CTR</text>
+        <text x="520" y="440" fill="rgba(99,102,241,0.5)" font-size="7" font-family="Manrope" letter-spacing="1">HIT.RATIO</text>
+      </svg>
+
+      <div class="ui-pill absolute top-6 left-6 z-[20] rounded-md px-3 py-2 flex items-center gap-2">
+        <iconify-icon icon="solar:cpu-bold" class="text-indigo-400" width="12"></iconify-icon>
+        <span class="text-white/60">Virtual</span><span class="text-white font-700">Memory</span>
+        <span class="ml-1 text-emerald-400">●</span>
+      </div>
+      <div class="ui-pill absolute top-6 right-6 z-[20] rounded-md px-3 py-2 flex items-center gap-2">
+        <iconify-icon icon="solar:database-linear" class="text-indigo-400" width="12"></iconify-icon>
+        <span class="text-white/60">Page</span><span class="text-white font-700">Table</span>
+        <span class="ml-1 font-bebas text-yellow-400 text-xs" id="heroPill">0 Faults</span>
+      </div>
+      <div class="ui-pill absolute bottom-6 left-1/2 -translate-x-1/2 z-[20] rounded-md px-4 py-2 flex items-center gap-3">
+        <iconify-icon icon="solar:layers-linear" class="text-white/40" width="12"></iconify-icon>
+        <span class="text-white/50">Ref String</span>
+        <span class="text-white font-700 font-bebas" id="heroPillRef">7 0 1 2 0 3 0 4 2 3</span>
+      </div>
+      <div class="absolute inset-0 z-[3] pointer-events-none"
+           style="background:linear-gradient(180deg,rgba(0,0,0,.3) 0%,transparent 30%,transparent 70%,rgba(0,0,0,.3) 100%);"></div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="max-w-7xl mx-auto mt-16 grid grid-cols-4 gap-px border border-white/[.06] rounded-xl overflow-hidden">
+    <div class="bg-white/[.02] px-6 py-5 flex flex-col gap-1">
+      <div class="font-bebas text-3xl text-gradient-indigo">4</div>
+      <div class="font-manrope text-[11px] text-white/35 tracking-widest uppercase">Algoritma</div>
+    </div>
+    <div class="bg-white/[.02] px-6 py-5 flex flex-col gap-1">
+      <div class="font-bebas text-3xl text-white">Step-by-Step</div>
+      <div class="font-manrope text-[11px] text-white/35 tracking-widest uppercase">Navigasi</div>
+    </div>
+    <div class="bg-white/[.02] px-6 py-5 flex flex-col gap-1">
+      <div class="font-bebas text-3xl text-gradient-gold">Textbook</div>
+      <div class="font-manrope text-[11px] text-white/35 tracking-widest uppercase">Format Tabel</div>
+    </div>
+    <div class="bg-white/[.02] px-6 py-5 flex flex-col gap-1">
+      <div class="font-bebas text-3xl text-white">∞</div>
+      <div class="font-manrope text-[11px] text-white/35 tracking-widest uppercase">Custom Input</div>
+    </div>
+  </div>
+</section>
+
+<hr class="vl-divider" />
+
+<!-- ══════════════════════════════════════════════
+     SECTION 2 — ALGORITMA
+══════════════════════════════════════════════ -->
+<section id="algorithms" class="py-24 px-6 section-grid-4">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex items-start justify-between mb-14">
+      <div>
+        <div class="font-manrope text-[10px] font-700 tracking-[.25em] text-indigo-400 uppercase mb-4">— Algoritma</div>
+        <h2 class="font-gloock text-4xl xl:text-5xl text-white leading-tight reveal-block">
+          <div class="reveal-word"><span>Empat</span></div>
+          <div class="reveal-word"><span class="text-gradient-indigo">Strategi</span></div><br>
+          <div class="reveal-word"><span>Penggantian</span></div>
+          <div class="reveal-word"><span>Halaman</span></div>
+        </h2>
+      </div>
+      <div class="hidden md:block text-right max-w-xs">
+        <p class="font-manrope text-sm text-white/35 leading-relaxed">
+          Setiap strategi memiliki trade-off antara kompleksitas implementasi dan efisiensi memori.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-4">
+      <!-- FIFO -->
+      <div class="col-span-12 md:col-span-5 arch-card frame-section corner-accent rounded-xl overflow-hidden">
+        <div class="h-40 relative"><canvas id="c-fifo" class="w-full h-full absolute inset-0"></canvas>
+          <div class="absolute inset-0 section-grid-2 pattern-overlay"></div>
+          <div class="ui-pill absolute top-3 left-3 rounded px-2 py-1">FIFO</div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <iconify-icon icon="solar:layers-linear" class="text-indigo-400" width="16"></iconify-icon>
+            <span class="font-bebas text-lg tracking-widest text-white">First In, First Out</span>
+          </div>
+          <p class="font-manrope text-xs text-white/40 leading-relaxed mb-4">
+            Halaman yang <strong class="text-white/60">paling lama</strong> berada di memori akan diganti pertama.
+            Menggunakan struktur <strong class="text-white/60">antrian (queue)</strong>.
+            Rentan terhadap <span class="text-red-400">anomali Bélády</span>.
+          </p>
+          <div class="bg-white/[.02] border border-white/[.05] rounded-lg p-3 font-manrope text-[11px] text-white/40">
+            <span class="text-white/25 uppercase tracking-widest text-[10px]">Struktur data:</span><br>
+            Queue FIFO → <span class="font-bebas text-indigo-300 text-sm">[P1, P2, P3 ...]</span>
+            <span class="text-white/25"> → dequeue P1 (terlama)</span>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <span class="ui-pill rounded px-2.5 py-1">Queue O(1)</span>
+            <span class="ui-pill rounded px-2.5 py-1 text-red-400">Anomali Bélády ⚠</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- LRU -->
+      <div class="col-span-12 md:col-span-7 arch-card frame-section corner-accent rounded-xl overflow-hidden">
+        <div class="h-40 relative"><canvas id="c-lru" class="w-full h-full absolute inset-0"></canvas>
+          <div class="absolute inset-0 section-grid-4 pattern-overlay"></div>
+          <div class="ui-pill absolute top-3 left-3 rounded px-2 py-1">LRU</div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <iconify-icon icon="solar:clock-circle-linear" class="text-indigo-400" width="16"></iconify-icon>
+            <span class="font-bebas text-lg tracking-widest text-white">Least Recently Used</span>
+          </div>
+          <p class="font-manrope text-xs text-white/40 leading-relaxed mb-4">
+            Mengganti halaman yang <strong class="text-white/60">paling lama tidak diakses</strong>.
+            Memanfaatkan prinsip <strong class="text-white/60">lokalitas temporal</strong>.
+            Tidak mengalami anomali Bélády.
+          </p>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="bg-white/[.03] border border-white/[.06] rounded-lg p-3">
+              <div class="font-bebas text-xl text-indigo-300">Stack</div>
+              <div class="font-manrope text-[10px] text-white/30 uppercase tracking-widest">Implementasi</div>
+            </div>
+            <div class="bg-white/[.03] border border-white/[.06] rounded-lg p-3">
+              <div class="font-bebas text-xl text-white">O(n)</div>
+              <div class="font-manrope text-[10px] text-white/30 uppercase tracking-widest">Kompleksitas</div>
+            </div>
+            <div class="bg-white/[.03] border border-white/[.06] rounded-lg p-3">
+              <div class="font-bebas text-xl text-gradient-gold">✓</div>
+              <div class="font-manrope text-[10px] text-white/30 uppercase tracking-widest">No Anomali</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optimal -->
+      <div class="col-span-12 md:col-span-7 arch-card frame-section corner-accent rounded-xl overflow-hidden">
+        <div class="h-36 relative"><canvas id="c-opt" class="w-full h-full absolute inset-0"></canvas>
+          <div class="absolute inset-0 section-grid-4 pattern-overlay"></div>
+          <div class="ui-pill absolute top-3 left-3 rounded px-2 py-1 text-yellow-300">OPT</div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <iconify-icon icon="solar:stars-linear" class="text-yellow-400" width="16"></iconify-icon>
+            <span class="font-bebas text-lg tracking-widest text-white">Optimal (Bélády's Algorithm)</span>
+          </div>
+          <p class="font-manrope text-xs text-white/40 leading-relaxed">
+            Mengganti halaman yang <strong class="text-white/60">paling lama tidak akan digunakan di masa depan</strong>.
+            Page fault minimum secara teori — tidak dapat diimplementasikan di sistem nyata.
+            Digunakan sebagai <span class="text-indigo-300">benchmark perbandingan</span>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Clock -->
+      <div class="col-span-12 md:col-span-5 arch-card frame-section corner-accent rounded-xl overflow-hidden">
+        <div class="h-36 relative"><canvas id="c-clock" class="w-full h-full absolute inset-0"></canvas>
+          <div class="absolute inset-0 section-grid-2 pattern-overlay"></div>
+          <div class="ui-pill absolute top-3 left-3 rounded px-2 py-1">CLOCK</div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <iconify-icon icon="solar:refresh-circle-linear" class="text-indigo-400" width="16"></iconify-icon>
+            <span class="font-bebas text-lg tracking-widest text-white">Clock (Second Chance)</span>
+          </div>
+          <p class="font-manrope text-xs text-white/40 leading-relaxed mb-3">
+            Aproksimasi LRU menggunakan <strong class="text-white/60">reference bit</strong>. Pointer berputar seperti jarum jam.
+          </p>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 font-manrope text-[11px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
+              <span class="text-white/45">Bit = 1 → beri second chance (set ke 0, lewati)</span>
+            </div>
+            <div class="flex items-center gap-2 font-manrope text-[11px]">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0"></span>
+              <span class="text-white/45">Bit = 0 → ganti halaman ini</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="vl-divider" />
+
+<!-- ══════════════════════════════════════════════
+     SECTION 3 — SIMULATOR (MAIN)
+══════════════════════════════════════════════ -->
+<section id="simulator" class="py-24 px-6 section-grid-2">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="font-manrope text-[10px] font-700 tracking-[.25em] text-indigo-400 uppercase mb-4">— Simulator Interaktif</div>
+    <h2 class="font-gloock text-4xl xl:text-5xl text-white leading-tight mb-10 reveal-block">
+      <div class="reveal-word"><span>Input</span></div>
+      <div class="reveal-word"><span class="text-gradient-indigo">&amp; Output</span></div>
+      <div class="reveal-word"><span>Lengkap</span></div>
+    </h2>
+
+    <!-- ────────── INPUT PANEL ────────── -->
+    <div class="frame-section corner-accent rounded-xl overflow-hidden mb-6">
+      <div class="p-5 border-b border-white/[.05] flex items-center justify-between">
+        <div class="font-manrope font-700 text-xs tracking-widest text-white/60 uppercase flex items-center gap-2">
+          <iconify-icon icon="solar:settings-linear" class="text-indigo-400" width="14"></iconify-icon>
+          Panel Input
+        </div>
+        <div class="ui-pill rounded px-2.5 py-1 text-emerald-400">READY</div>
+      </div>
+
+      <div class="p-6">
+        <!-- Row 1: Reference String -->
+        <div class="mb-5">
+          <label class="font-manrope text-[10px] font-700 tracking-widest text-white/40 uppercase block mb-1.5">
+            Reference String
+            <span class="normal-case text-white/20 ml-2">— pisahkan dengan spasi, koma, atau enter</span>
+          </label>
+          <div class="flex gap-3 items-start">
+            <div class="flex-1">
+              <input id="refInput" type="text"
+                     value="7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1"
+                     placeholder="Contoh: 7 0 1 2 0 3 0 4 2 3..."
+                     class="vl-input rounded-lg px-4 py-3 text-sm w-full tracking-wider"
+                     oninput="previewTokens()" />
+              <div id="inputError" class="hidden font-manrope text-[11px] text-red-400 mt-1.5">
+                <iconify-icon icon="lucide:alert-circle" width="11" class="inline mr-1"></iconify-icon>
+                <span id="inputErrorMsg"></span>
+              </div>
+            </div>
+          </div>
+          <!-- Token preview -->
+          <div class="mt-3">
+            <div class="font-manrope text-[10px] text-white/25 uppercase tracking-widest mb-2">Preview Token:</div>
+            <div id="tokenPreview" class="flex flex-wrap gap-1.5"></div>
+          </div>
+        </div>
+
+        <!-- Row 2: Frame + Algo + Buttons -->
+        <div class="grid grid-cols-12 gap-4 items-end">
+          <!-- Jumlah Frame -->
+          <div class="col-span-6 md:col-span-2">
+            <label class="font-manrope text-[10px] font-700 tracking-widest text-white/40 uppercase block mb-1.5">
+              Jumlah Frame
+            </label>
+            <div class="relative">
+              <select id="frameCount" class="vl-select rounded-lg px-4 py-3 w-full pr-8 text-sm" onchange="previewTokens()">
+                <option value="1">1 Frame</option>
+                <option value="2">2 Frame</option>
+                <option value="3" selected>3 Frame</option>
+                <option value="4">4 Frame</option>
+                <option value="5">5 Frame</option>
+                <option value="6">6 Frame</option>
+              </select>
+              <iconify-icon icon="lucide:chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" width="12"></iconify-icon>
+            </div>
+          </div>
+
+          <!-- Algoritma -->
+          <div class="col-span-12 md:col-span-5">
+            <label class="font-manrope text-[10px] font-700 tracking-widest text-white/40 uppercase block mb-1.5">Algoritma</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button onclick="selectAlgo('fifo')"   id="tab-fifo"    class="algo-tab active   px-3 py-2 text-center">
+                <div class="font-bebas text-sm text-white">FIFO</div>
+                <div class="font-manrope text-[9px] text-white/30 mt-0.5">Queue</div>
+              </button>
+              <button onclick="selectAlgo('lru')"    id="tab-lru"     class="algo-tab px-3 py-2 text-center">
+                <div class="font-bebas text-sm text-white">LRU</div>
+                <div class="font-manrope text-[9px] text-white/30 mt-0.5">Stack</div>
+              </button>
+              <button onclick="selectAlgo('optimal')"id="tab-optimal" class="algo-tab px-3 py-2 text-center">
+                <div class="font-bebas text-sm text-white">OPT</div>
+                <div class="font-manrope text-[9px] text-white/30 mt-0.5">Look-ahead</div>
+              </button>
+              <button onclick="selectAlgo('clock')"  id="tab-clock"   class="algo-tab px-3 py-2 text-center">
+                <div class="font-bebas text-sm text-white">CLOCK</div>
+                <div class="font-manrope text-[9px] text-white/30 mt-0.5">Bit</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="col-span-6 md:col-span-2 flex gap-2">
+            <button onclick="runSimulator()"
+                    class="btn-primary flex-1 rounded-lg py-3 font-manrope font-700 text-sm tracking-widest text-white uppercase flex items-center justify-center gap-2">
+              <iconify-icon icon="solar:play-linear" width="14"></iconify-icon>
+              Jalankan
+            </button>
+          </div>
+          <div class="col-span-6 md:col-span-3 flex gap-2">
+            <button onclick="resetSim()"
+                    class="btn-etched flex-1 rounded-lg py-3 font-manrope font-600 text-xs text-white/50 uppercase flex items-center justify-center gap-2">
+              <iconify-icon icon="lucide:rotate-ccw" width="13"></iconify-icon>
+              Reset
+            </button>
+            <button onclick="runAll()"
+                    class="btn-etched flex-1 rounded-lg py-3 font-manrope font-600 text-xs text-white/50 uppercase flex items-center justify-center gap-2">
+              <iconify-icon icon="solar:chart-square-linear" width="13"></iconify-icon>
+              Run All
+            </button>
+          </div>
+        </div>
+
+        <!-- Presets -->
+        <div class="flex flex-wrap items-center gap-2 mt-5 pt-5 border-t border-white/[.04]">
+          <span class="font-manrope text-[10px] text-white/20 uppercase tracking-widest mr-1">Preset:</span>
+          <button onclick="setPreset('7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1',3)"
+                  class="btn-etched rounded px-3 py-1 font-manrope text-[10px] tracking-widest text-white/40 uppercase">Klasik 20-ref</button>
+          <button onclick="setPreset('7 0 1 2 0 3 0 4 2 3',3)"
+                  class="btn-etched rounded px-3 py-1 font-manrope text-[10px] tracking-widest text-white/40 uppercase">Contoh Singkat</button>
+          <button onclick="setPreset('1 2 3 4 1 2 5 1 2 3 4 5',3)"
+                  class="btn-etched rounded px-3 py-1 font-manrope text-[10px] tracking-widest text-white/40 uppercase">Contoh Buku</button>
+          <button onclick="setPreset('0 1 2 3 0 1 4 0 1 2 3 4',3)"
+                  class="btn-etched rounded px-3 py-1 font-manrope text-[10px] tracking-widest text-white/40 uppercase">Anomali Bélády</button>
+          <button onclick="setPreset('2 3 2 1 5 2 4 5 3 2 5 2',4)"
+                  class="btn-etched rounded px-3 py-1 font-manrope text-[10px] tracking-widest text-white/40 uppercase">4-Frame Test</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────── OUTPUT PANEL ────────── -->
+    <div id="outputPanel" class="hidden space-y-6">
+
+      <!-- ── SUMMARY STATS ── -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="metric-card corner-accent rounded-xl p-5 md:col-span-1">
+          <iconify-icon icon="solar:document-text-linear" class="text-indigo-400 mb-3 block" width="18"></iconify-icon>
+          <div class="font-bebas text-3xl text-white mb-1" id="s-total">—</div>
+          <div class="font-manrope text-[10px] text-white/35 uppercase tracking-widest">Total Ref</div>
+        </div>
+        <div class="metric-card corner-accent rounded-xl p-5 md:col-span-1">
+          <iconify-icon icon="solar:close-circle-linear" class="text-red-400 mb-3 block" width="18"></iconify-icon>
+          <div class="font-bebas text-3xl text-gradient-red mb-1" id="s-faults">—</div>
+          <div class="font-manrope text-[10px] text-white/35 uppercase tracking-widest">Page Faults</div>
+          <div class="mini-bar mt-2"><div class="mini-bar-fill bg-red-500/60" id="s-fault-bar" style="width:0%"></div></div>
+        </div>
+        <div class="metric-card corner-accent rounded-xl p-5 md:col-span-1">
+          <iconify-icon icon="solar:check-circle-linear" class="text-emerald-400 mb-3 block" width="18"></iconify-icon>
+          <div class="font-bebas text-3xl text-gradient-green mb-1" id="s-hits">—</div>
+          <div class="font-manrope text-[10px] text-white/35 uppercase tracking-widest">Page Hits</div>
+          <div class="mini-bar mt-2"><div class="mini-bar-fill bg-emerald-500/60" id="s-hit-bar" style="width:0%"></div></div>
+        </div>
+        <div class="metric-card corner-accent rounded-xl p-5 md:col-span-1">
+          <iconify-icon icon="solar:percent-linear" class="text-red-400 mb-3 block" width="18"></iconify-icon>
+          <div class="font-bebas text-3xl text-gradient-red mb-1" id="s-frate">—</div>
+          <div class="font-manrope text-[10px] text-white/35 uppercase tracking-widest">Fault Rate</div>
+        </div>
+        <div class="metric-card corner-accent rounded-xl p-5 md:col-span-1">
+          <iconify-icon icon="solar:chart-square-linear" class="text-emerald-400 mb-3 block" width="18"></iconify-icon>
+          <div class="font-bebas text-3xl text-gradient-green mb-1" id="s-hrate">—</div>
+          <div class="font-manrope text-[10px] text-white/35 uppercase tracking-widest">Hit Rate</div>
+        </div>
+      </div>
+
+      <!-- ── TEXTBOOK TABLE + NAVIGATOR ── -->
+      <div class="frame-section corner-accent rounded-xl overflow-hidden">
+        <div class="p-5 border-b border-white/[.05] flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-3">
+            <iconify-icon icon="solar:table-linear" class="text-indigo-400" width="16"></iconify-icon>
+            <div class="font-manrope font-700 text-xs tracking-widest text-white/60 uppercase">Tabel Visualisasi (Textbook Format)</div>
+            <div class="ui-pill rounded px-2.5 py-1" id="out-algo-label">—</div>
+          </div>
+          <!-- Navigation -->
+          <div class="flex items-center gap-2">
+            <button id="btn-first"   onclick="goStep(0)"             class="btn-etched rounded-lg px-3 py-2 text-xs text-white/40 font-manrope font-600 uppercase flex items-center gap-1">
+              <iconify-icon icon="lucide:chevrons-left" width="12"></iconify-icon>First
+            </button>
+            <button id="btn-prev"    onclick="prevStep()"            class="btn-etched rounded-lg px-3 py-2 text-xs text-white/40 font-manrope font-600 uppercase flex items-center gap-1">
+              <iconify-icon icon="lucide:chevron-left" width="12"></iconify-icon>Prev
+            </button>
+            <div class="ui-pill rounded-lg px-3 py-2 text-white/60" id="step-indicator">0 / 0</div>
+            <button id="btn-next"    onclick="nextStep()"            class="btn-primary rounded-lg px-3 py-2 text-xs text-white font-manrope font-700 uppercase flex items-center gap-1">
+              Next<iconify-icon icon="lucide:chevron-right" width="12"></iconify-icon>
+            </button>
+            <button id="btn-last"    onclick="goStep(9999)"          class="btn-etched rounded-lg px-3 py-2 text-xs text-white/40 font-manrope font-600 uppercase flex items-center gap-1">
+              Last<iconify-icon icon="lucide:chevrons-right" width="12"></iconify-icon>
+            </button>
+            <button id="btn-auto"    onclick="toggleAuto()"          class="btn-etched rounded-lg px-3 py-2 text-xs text-white/40 font-manrope font-600 uppercase flex items-center gap-1 ml-1">
+              <iconify-icon icon="solar:play-linear" width="12" id="auto-icon"></iconify-icon>Auto
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrubber -->
+        <div class="px-5 py-3 border-b border-white/[.04] flex items-center gap-3">
+          <span class="font-manrope text-[10px] text-white/25 uppercase tracking-widest flex-shrink-0">Step</span>
+          <input type="range" id="scrubber" class="vl-range" min="0" value="0" oninput="goStep(+this.value)" />
+          <span class="font-bebas text-sm text-indigo-300 flex-shrink-0 w-8 text-right" id="scrub-label">0</span>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto p-5">
+          <table class="tb-table" id="mainTable">
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Legend -->
+        <div class="px-5 pb-4 flex flex-wrap gap-4 border-t border-white/[.04] pt-4">
+          <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/40"></div><span class="font-manrope text-[10px] text-white/30 uppercase tracking-widest">Hit (H)</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded bg-red-500/20 border border-red-500/40"></div><span class="font-manrope text-[10px] text-white/30 uppercase tracking-widest">Fault (F)</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded bg-indigo-500/20 border border-indigo-500/40"></div><span class="font-manrope text-[10px] text-white/30 uppercase tracking-widest">Step Aktif</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded bg-yellow-500/15 border border-yellow-500/30"></div><span class="font-manrope text-[10px] text-white/30 uppercase tracking-widest">Replaced</span></div>
+        </div>
+      </div>
+
+      <!-- ── STEP DETAIL ── -->
+      <div class="grid grid-cols-12 gap-4">
+
+        <!-- Frame State Visual -->
+        <div class="col-span-12 md:col-span-4 frame-section corner-accent rounded-xl overflow-hidden">
+          <div class="p-4 border-b border-white/[.05]">
+            <div class="font-manrope font-700 text-xs tracking-widest text-white/60 uppercase flex items-center gap-2">
+              <iconify-icon icon="solar:cpu-bold" class="text-indigo-400" width="14"></iconify-icon>
+              State Frame Memori
+            </div>
+          </div>
+          <div class="p-5">
+            <!-- Requested page indicator -->
+            <div class="flex items-center gap-3 mb-5">
+              <span class="font-manrope text-[10px] text-white/30 uppercase tracking-widest">Halaman diminta:</span>
+              <div class="font-bebas text-3xl text-white" id="detail-page">—</div>
+              <div id="detail-status" class="ui-pill rounded-full px-3 py-1.5 text-white/30">—</div>
+            </div>
+            <!-- Frame slots -->
+            <div id="frameSlots" class="flex flex-wrap gap-2 mb-4"></div>
+            <!-- Clock pointer info -->
+            <div id="clockInfo" class="hidden mt-3 p-3 rounded-lg bg-indigo-500/[.06] border border-indigo-500/20 font-manrope text-[11px] text-indigo-300">
+              <span class="text-white/40">Pointer jam:</span> <span id="clockPtr">—</span>
+            </div>
+            <!-- Running totals -->
+            <div class="mt-4 pt-4 border-t border-white/[.05] grid grid-cols-2 gap-3">
+              <div>
+                <div class="font-manrope text-[10px] text-white/25 uppercase tracking-widest mb-1">Faults s.d. sini</div>
+                <div class="font-bebas text-2xl text-gradient-red" id="detail-faults-so-far">0</div>
+              </div>
+              <div>
+                <div class="font-manrope text-[10px] text-white/25 uppercase tracking-widest mb-1">Hits s.d. sini</div>
+                <div class="font-bebas text-2xl text-gradient-green" id="detail-hits-so-far">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Log -->
+        <div class="col-span-12 md:col-span-8 frame-section corner-accent rounded-xl overflow-hidden">
+          <div class="p-4 border-b border-white/[.05]">
+            <div class="font-manrope font-700 text-xs tracking-widest text-white/60 uppercase flex items-center gap-2">
+              <iconify-icon icon="solar:clipboard-list-linear" class="text-indigo-400" width="14"></iconify-icon>
+              Log Kejadian — Step Saat Ini
+            </div>
+          </div>
+          <div class="p-5 space-y-1.5" id="stepLog"></div>
+
+          <!-- Full log (scrollable) -->
+          <div class="border-t border-white/[.04]">
+            <button onclick="toggleFullLog()" class="w-full p-3 font-manrope text-[11px] text-white/25 uppercase tracking-widest hover:text-white/50 transition-colors flex items-center justify-center gap-2">
+              <iconify-icon icon="lucide:list" width="12"></iconify-icon>
+              <span id="fullLogToggleLabel">Tampilkan Semua Log</span>
+            </button>
+            <div id="fullLog" class="hidden px-5 pb-5 max-h-60 overflow-y-auto space-y-1">
+              <!-- populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── OUTPUT SUMMARY DIAGRAM ── -->
+      <div class="frame-section corner-accent rounded-xl overflow-hidden">
+        <div class="p-5 border-b border-white/[.05] flex items-center gap-2">
+          <iconify-icon icon="solar:diagram-up-linear" class="text-indigo-400" width="15"></iconify-icon>
+          <div class="font-manrope font-700 text-xs tracking-widest text-white/60 uppercase">Diagram Ringkasan Output</div>
+        </div>
+        <div class="p-5 space-y-5">
+          <div id="summaryOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="frame-section corner-accent rounded-xl p-20 text-center">
+      <iconify-icon icon="solar:cpu-bolt-linear" class="text-indigo-400/30 mb-4 block mx-auto" width="56"></iconify-icon>
+      <div class="font-manrope font-700 text-sm text-white/30 mb-2">Belum ada hasil simulasi</div>
+      <div class="font-manrope text-xs text-white/20">Masukkan reference string lalu klik <span class="text-indigo-400">Jalankan</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="vl-divider" />
+
+<!-- ══════════════════════════════════════════════
+     SECTION 4 — COMPARISON
+══════════════════════════════════════════════ -->
+<section id="comparison" class="py-24 px-6 section-grid-4">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="flex items-end justify-between mb-10">
+      <div>
+        <div class="font-manrope text-[10px] font-700 tracking-[.25em] text-indigo-400 uppercase mb-4">— Komparasi</div>
+        <h2 class="font-gloock text-4xl xl:text-5xl text-white leading-tight reveal-block">
+          <div class="reveal-word"><span>Analisis</span></div>
+          <div class="reveal-word"><span class="text-gradient-indigo">Komparatif</span></div><br>
+          <div class="reveal-word"><span>Semua Algoritma</span></div>
+        </h2>
+      </div>
+      <button onclick="runAll()"
+              class="btn-primary hidden md:flex rounded-lg px-5 py-2.5 font-manrope font-700 text-xs tracking-widest text-white uppercase items-center gap-2 mb-1">
+        <iconify-icon icon="solar:chart-square-linear" width="13"></iconify-icon>
+        Run All
+      </button>
+    </div>
+
+    <div class="grid grid-cols-12 gap-4">
+
+      <!-- Bar chart -->
+      <div class="col-span-12 frame-section corner-accent rounded-xl p-6">
+        <div class="font-manrope font-700 text-xs tracking-widest text-white/60 uppercase mb-6">Bar Chart — Page Fault Count</div>
+        <div id="barChart" class="comp-bar-wrap">
+          <div class="flex-1 text-center font-manrope text-xs text-white/20">Klik "Run All" terlebih dahulu</div>
+        </div>
+        <div class="flex gap-2 flex-wrap mt-4" id="barLegend"></div>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="col-span-12 md:col-span-7 frame-section corner-accent rounded-xl overflow-hidden">
+        <div class="p-5 border-b border-white/[.05]">
+          <div class="font-manrope font-700 text-xs tracking-widest text-white/60 uppercase">Hasil Semua Algoritma</div>
+        </div>
+        <div id="compTableWrap" class="p-5">
+          <div class="text-center py-8">
+            <iconify-icon icon="solar:chart-square-linear" class="text-white/10 mb-3 block mx-auto" width="36"></iconify-icon>
+            <div class="font-manrope text-xs text-white/20">Klik "Run All" untuk membandingkan semua algoritma</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Characteristic table -->
+      <div class="col-span-12 md:col-span-5 frame-section corner-accent rounded-xl overflow-hidden">
+        <div class="p-5 border-b border-white/[.05]">
+          <div class="font-manrope font-700 text-xs tracking-widest text-white/60 uppercase">Karakteristik Algoritma</div>
+        </div>
+        <table class="cmp-table w-full">
+          <thead><tr>
+            <th class="text-left">Algoritma</th>
+            <th>Anomali</th>
+            <th>Overhead</th>
+            <th>Optimal</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="font-manrope font-700 text-white text-xs">FIFO</span></td>
+              <td class="text-center text-red-400 text-xs">Ya ⚠</td>
+              <td class="text-center text-emerald-400 text-xs">O(1)</td>
+              <td class="text-center text-red-400 text-xs">✗</td>
+            </tr>
+            <tr>
+              <td><span class="font-manrope font-700 text-white text-xs">LRU</span></td>
+              <td class="text-center text-emerald-400 text-xs">Tidak</td>
+              <td class="text-center text-yellow-400 text-xs">O(n)</td>
+              <td class="text-center text-yellow-400 text-xs">≈</td>
+            </tr>
+            <tr>
+              <td><span class="font-manrope font-700 text-white text-xs">Optimal</span></td>
+              <td class="text-center text-emerald-400 text-xs">Tidak</td>
+              <td class="text-center text-red-400 text-xs">O(n²)</td>
+              <td class="text-center text-emerald-400 text-xs">✓</td>
+            </tr>
+            <tr>
+              <td><span class="font-manrope font-700 text-white text-xs">Clock</span></td>
+              <td class="text-center text-emerald-400 text-xs">Tidak</td>
+              <td class="text-center text-emerald-400 text-xs">O(n)</td>
+              <td class="text-center text-yellow-400 text-xs">≈</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="p-5 border-t border-white/[.05] font-manrope text-[10px] text-white/20 leading-relaxed">
+          <span class="text-emerald-400">✓</span> Optimal teoritis &nbsp;
+          <span class="text-yellow-400">≈</span> Mendekati &nbsp;
+          <span class="text-red-400">⚠</span> Rentan anomali
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="vl-divider" />
+
+<!-- FOOTER -->
+<footer class="py-16 px-6 section-grid-2">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="vl-logo w-8 h-8 rounded-[5px] flex items-center justify-center">
+          <span class="font-bebas text-sm tracking-widest text-gradient-indigo">PR</span>
+        </div>
+        <span class="font-manrope font-700 text-sm tracking-widest text-white/90 uppercase">PageReplacement</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="status-dot w-1.5 h-1.5 rounded-full bg-emerald-400 block"></span>
+        <span class="font-manrope text-[10px] text-emerald-400 uppercase tracking-widest">Simulator Active</span>
+      </div>
+      <div class="font-manrope text-[11px] text-white/20">© 2026 Page Replacement Simulator</div>
+    </div>
+  </div>
+</footer>
+</main>
+
+<!-- ══════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════ -->
+<script src="script.js"></script>
+</body>
+</html>
